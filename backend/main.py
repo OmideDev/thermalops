@@ -1,16 +1,13 @@
 from fastapi import FastAPI
 
+from app.api.v1.health import router as health_router
+from app.core.config import APP_NAME, APP_VERSION
+
+
 app = FastAPI(
-    title="ThermalOps API",
+    title=APP_NAME,
     description="HVAC Operations and Monitoring Platform",
-    version="0.1.0",
+    version=APP_VERSION,
 )
 
-
-@app.get("/health")
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "thermalops-api",
-        "version": "0.1.0",
-    }
+app.include_router(health_router)
