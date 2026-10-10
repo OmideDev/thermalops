@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-from app.core.config import APP_VERSION
-
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -11,5 +10,5 @@ def health_check():
     return {
         "status": "healthy",
         "service": "thermalops-api",
-        "version": APP_VERSION,
+        "version": settings.app_version,
     }

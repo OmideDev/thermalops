@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 
 from app.api.v1.health import router as health_router
-from app.core.config import APP_NAME, APP_VERSION
-
+from app.core.config import settings
 
 app = FastAPI(
-    title=APP_NAME,
+    title=settings.app_name,
     description="HVAC Operations and Monitoring Platform",
-    version=APP_VERSION,
-)
+    version=settings.app_version,)
 
 app.include_router(health_router)
