@@ -1,0 +1,9 @@
+# Pyrefly config for the ThermalOps backend.
+# PyMuPDF is installed in the active Python 3.14 site-packages, but some
+# analyzers still fail to resolve its native package layout as a normal import.
+
+python-version = "3.14"
+search-path = ["."]
+
+# Treat pymupdf as available-or-Any so IDE diagnostics do not block RAG scripts.
+ignore-missing-imports = ["pymupdf", "pymupdf.*", "fitz", "fitz.*"]
