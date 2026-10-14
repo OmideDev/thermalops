@@ -1,7 +1,8 @@
 """
-Standalone PDF text extraction for ThermalOps RAG Phase 1.
+Standalone PDF text extraction for ThermalOps RAG.
 
 Extracts plain text page by page with PyMuPDF (`import pymupdf`).
+Each page keeps raw ``text`` plus additive ``normalized_text``.
 Does not call the database, embeddings, or FastAPI.
 
 Usage (from the backend folder):
@@ -35,6 +36,12 @@ import pymupdf  # pyrefly: ignore[missing-import]
 # Resolve paths relative to the backend/ directory, not the caller's cwd.
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PDF = BACKEND_ROOT / "data" / "manuals" / "460945ERT_iom.pdf"
+
+# Allow `from app.rag...` when this script is launched from backend/.
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+
+from app.rag.normalize import normalize_text
 
 
 def sha256_file(path: Path) -> str:
@@ -102,7 +109,9 @@ def extract_page(document: pymupdf.Document, page_number: int) -> dict:
 
     page_index = page_number - 1
     page = document.load_page(page_index)
+    # Keep raw extraction untouched; normalized copy is additive only.
     text = page.get_text("text")
+    normalized = normalize_text(text)
 
     return {
         "page_number": page_number,
@@ -111,6 +120,8 @@ def extract_page(document: pymupdf.Document, page_number: int) -> dict:
         "line_count": len(text.splitlines()),
         "is_blank": not text.strip(),
         "text": text,
+        "normalized_text": normalized,
+        "normalized_char_count": len(normalized),
     }
 
 

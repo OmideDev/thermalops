@@ -104,7 +104,7 @@ def test_metadata_shape_is_portable(sample_pdf: Path):
     # Temp dirs are outside backend/, so relative_path should be omitted.
     assert metadata["relative_path"] is None
 
-    # Output shape for pages
+    # Output shape for pages (raw text preserved; normalized is additive)
     page = result["pages"][0]
     assert set(page) >= {
         "page_number",
@@ -113,7 +113,11 @@ def test_metadata_shape_is_portable(sample_pdf: Path):
         "line_count",
         "is_blank",
         "text",
+        "normalized_text",
+        "normalized_char_count",
     }
+    assert "PAGE_ONE_MARKER" in page["text"]
+    assert "PAGE_ONE_MARKER" in page["normalized_text"]
 
 
 def test_relative_path_when_pdf_under_backend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
