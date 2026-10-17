@@ -11,6 +11,8 @@ from app.rag.ollama import (
     DEFAULT_OLLAMA_MODEL,
     PHASE_4A_RESPONSE_JSON_SCHEMA,
     OllamaChatBackend,
+    OllamaProtocolError,
+    OllamaUnavailableError,
 )
 
 
@@ -89,7 +91,7 @@ def test_timeout_maps_to_timeout_error():
         client.close()
 
 
-def test_connection_failure_maps_to_connection_error():
+def test_connection_failure_maps_to_unavailable_error():
     def handler(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("down", request=request)
 
@@ -100,16 +102,16 @@ def test_connection_failure_maps_to_connection_error():
     )
     backend = OllamaChatBackend(http_client=client)
     try:
-        with pytest.raises(ConnectionError, match="Ollama HTTP error"):
+        with pytest.raises(OllamaUnavailableError, match="unavailable"):
             backend.complete(system="s", user="u")
     finally:
         backend.close()
         client.close()
 
 
-def test_http_error_status_raises_connection_error():
+def test_http_error_status_raises_protocol_error():
     def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(503, text="unavailable")
+        return httpx.Response(500, text="boom")
 
     transport = httpx.MockTransport(handler)
     client = httpx.Client(
@@ -118,7 +120,7 @@ def test_http_error_status_raises_connection_error():
     )
     backend = OllamaChatBackend(http_client=client)
     try:
-        with pytest.raises(ConnectionError):
+        with pytest.raises(OllamaProtocolError, match="unexpected HTTP status"):
             backend.complete(system="s", user="u")
     finally:
         backend.close()

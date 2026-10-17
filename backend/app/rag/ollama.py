@@ -36,6 +36,14 @@ DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_OLLAMA_MODEL = "qwen3:4b-instruct"
 
 
+class OllamaUnavailableError(ConnectionError):
+    """Ollama daemon unreachable or connection failed (map to HTTP 503)."""
+
+
+class OllamaProtocolError(RuntimeError):
+    """Invalid Ollama HTTP status or response body (map to HTTP 502)."""
+
+
 def _assert_localhost_base_url(base_url: str) -> str:
     parsed = urlparse(base_url)
     host = (parsed.hostname or "").lower()
@@ -136,21 +144,29 @@ class OllamaChatBackend:
             data = response.json()
         except httpx.TimeoutException as exc:
             raise TimeoutError(
-                f"Ollama request timed out talking to {self.base_url}"
+                "Ollama request timed out talking to localhost"
+            ) from exc
+        except httpx.ConnectError as exc:
+            raise OllamaUnavailableError(
+                "Ollama service is unavailable on localhost"
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            raise OllamaProtocolError(
+                "Ollama returned an unexpected HTTP status"
             ) from exc
         except httpx.HTTPError as exc:
-            raise ConnectionError(
-                f"Ollama HTTP error talking to {self.base_url}: {exc}"
+            raise OllamaUnavailableError(
+                "Ollama HTTP transport failed on localhost"
             ) from exc
 
         if not isinstance(data, dict):
-            raise ValueError("Ollama response is not a JSON object")
+            raise OllamaProtocolError("Ollama response is not a JSON object")
         self.last_raw_response = data
 
         message = data.get("message")
         if not isinstance(message, dict):
-            raise ValueError("Ollama response missing message object")
+            raise OllamaProtocolError("Ollama response missing message object")
         content = message.get("content")
         if not isinstance(content, str):
-            raise ValueError("Ollama message content must be a string")
+            raise OllamaProtocolError("Ollama message content must be a string")
         return content
