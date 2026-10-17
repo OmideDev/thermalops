@@ -1,0 +1,12 @@
+# Optional local RAG / semantic-search experiment dependencies.
+# Install into the same Python used for backend tests:
+#   python -m pip install -r requirements-rag.txt
+#
+# Preferred neural model: sentence-transformers/all-MiniLM-L6-v2 (Apache-2.0)
+# Served locally via fastembed + onnxruntime because stock PyPI torch wheels
+# for Python 3.14 on Windows are often unavailable (PyTorch CPU wheels may
+# exist on download.pytorch.org but are large).
+
+numpy>=2.0
+onnxruntime==1.31.0
+fastembed==0.9.0
