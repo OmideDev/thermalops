@@ -1,5 +1,6 @@
-"""Reproducible RAG evaluation helpers (retrieval-first; offline by default)."""
+"""Reproducible RAG evaluation helpers (retrieval + answer; offline by default)."""
 
+from app.rag_eval.answer_selection import load_answer_selection, selected_scenarios
 from app.rag_eval.dataset import (
     CATEGORIES,
     EVAL_SPLITS,
@@ -21,6 +22,8 @@ __all__ = [
     "EXPECTED_BEHAVIORS",
     "load_dataset",
     "validate_dataset",
+    "load_answer_selection",
+    "selected_scenarios",
     "hit_at_k",
     "mean_reciprocal_rank",
     "recall_at_k",

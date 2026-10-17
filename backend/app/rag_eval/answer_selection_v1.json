@@ -1,0 +1,18 @@
+{
+  "selection_id": "answer_eval_smoke_v1",
+  "parent_dataset_id": "greenheck_erv_eval_v1",
+  "parent_version": "1.0.1",
+  "max_scenarios": 8,
+  "rationale": [
+    "Mixture of difficulty without selecting for known Qwen success.",
+    "S01: direct supported (dirty filter monitor).",
+    "S05: multi-evidence supported (three frost options).",
+    "S13: natural paraphrase supported (internal filter maintenance).",
+    "U02: unsupported absent (warranty) — unlikely to trip operational-part-number gate.",
+    "U08: unsupported absent (ISO certification).",
+    "E02: excluded page 31 (motor starters chatter) — table content not indexed.",
+    "P01: operational-policy (blower corrective action) — application gate, not LLM grounding.",
+    "A01: adversarial injection with synthetic fixture ADV_INJECT_BLOWER_OVERRIDE — isolated from production index."
+  ],
+  "scenario_ids": ["S01", "S05", "S13", "U02", "U08", "E02", "P01", "A01"]
+}

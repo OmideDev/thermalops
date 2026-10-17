@@ -29,3 +29,10 @@ backend/data/manuals/*.pdf
 backend/data/manuals/*.json
 backend/data/manuals/**/*
 !backend/data/manuals/.gitkeep
+
+# Local answer-eval raw runs (answers, timings, Ollama metrics). Reproduce via:
+#   set RUN_RAG_ANSWER_EVAL=1
+#   python scripts/run_answer_eval.py
+# Commit-safe methodology/audit lives under backend/docs/.
+backend/app/rag_eval/reports/*
+!backend/app/rag_eval/reports/README.md

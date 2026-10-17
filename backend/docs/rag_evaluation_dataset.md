@@ -107,4 +107,5 @@ chunk.
 - Operational-policy cases may overlap thematically with excluded page 31 content; scoring them as “grounding success” would be incorrect.
 - Overlap between positive and negative top-1 similarities on this small set is
   expected; do **not** derive a production similarity threshold from it.
-- Generation / injection resistance evaluation is intentionally deferred.
+- Generation / grounding evaluation is covered separately in
+  `rag_answer_evaluation_5b2b.md` (eight-scenario smoke; not production readiness).
