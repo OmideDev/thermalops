@@ -1,0 +1,115 @@
+{
+  "dataset_id": "greenheck_erv_eval_v1_holdout_paraphrase",
+  "version": "1.0.0",
+  "parent_dataset_id": "greenheck_erv_eval_v1",
+  "parent_version": "1.0.1",
+  "note": "Holdout paraphrases with independently verified gold labels. Not part of the original v1.0.0 baseline score card; report separately.",
+  "document_id": "460945ERT_iom.pdf",
+  "content_sha256": "4dd39c9d78e4aa7c8f6bd78b3f42828fd6c0a3e2810540f703f712404018b60d",
+  "allowed_pages": [15, 29, 33],
+  "excluded_pages": [31],
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "scenario_counts": {
+    "supported_informational": 4,
+    "total": 4
+  },
+  "scenarios": [
+    {
+      "id": "H01",
+      "category": "supported_informational",
+      "split": "retrieval_positive",
+      "difficulty": "natural_paraphrase",
+      "question": "Which device watches for clogged outdoor or exhaust filters by sensing pressure?",
+      "expected_behavior": "answer_from_evidence",
+      "expected_pages": [15],
+      "expected_section_headings": ["Dirty Filter Sensor"],
+      "expected_chunk_ids": ["460945ERT_iom.pdf:p15:c7:4dd39c9d78e4:3310b10a0f6a"],
+      "reference_facts_paraphrased": [
+        "Dirty filter sensors monitor pressure drop across outdoor and/or exhaust air filters."
+      ],
+      "forbidden_claims": [],
+      "insufficiency_kind": null,
+      "rationale": "Paraphrase of dirty-filter monitoring; gold verified on page 15 Dirty Filter Sensor chunk.",
+      "provenance": {
+        "document_id": "460945ERT_iom.pdf",
+        "content_sha256": "4dd39c9d78e4aa7c8f6bd78b3f42828fd6c0a3e2810540f703f712404018b60d",
+        "verified_pages": [15],
+        "verification_method": "human_read_eligible_chunk_text"
+      }
+    },
+    {
+      "id": "H02",
+      "category": "supported_informational",
+      "split": "retrieval_positive",
+      "difficulty": "natural_paraphrase",
+      "question": "When freezing outdoor air threatens the recovery wheel, what optional protection modes exist?",
+      "expected_behavior": "answer_from_evidence",
+      "expected_pages": [15],
+      "expected_section_headings": ["Frost Control"],
+      "expected_chunk_ids": [
+        "460945ERT_iom.pdf:p15:c0:4dd39c9d78e4:8e55f9687bd5",
+        "460945ERT_iom.pdf:p15:c1:4dd39c9d78e4:a714ab15c597"
+      ],
+      "reference_facts_paraphrased": [
+        "Timed exhaust, electric preheat, and modulating wheel frost control."
+      ],
+      "forbidden_claims": [],
+      "insufficiency_kind": null,
+      "rationale": "Paraphrase requiring the three named frost-control options spanning two Frost Control chunks.",
+      "provenance": {
+        "document_id": "460945ERT_iom.pdf",
+        "content_sha256": "4dd39c9d78e4aa7c8f6bd78b3f42828fd6c0a3e2810540f703f712404018b60d",
+        "verified_pages": [15],
+        "verification_method": "human_read_eligible_chunk_text"
+      }
+    },
+    {
+      "id": "H03",
+      "category": "supported_informational",
+      "split": "retrieval_positive",
+      "difficulty": "indirect_reference",
+      "question": "On the default timed-exhaust frost cycle, how long is the supply fan off and how often does that pause repeat?",
+      "expected_behavior": "answer_from_evidence",
+      "expected_pages": [15],
+      "expected_section_headings": ["Frost Control"],
+      "expected_chunk_ids": [
+        "460945ERT_iom.pdf:p15:c1:4dd39c9d78e4:a714ab15c597"
+      ],
+      "reference_facts_paraphrased": [
+        "Default timed exhaust shuts the supply fan off for 5 minutes every 30 minutes."
+      ],
+      "forbidden_claims": [],
+      "insufficiency_kind": null,
+      "rationale": "Indirect numeric recall of the default timer; gold is only the chunk containing 5/30 minute language.",
+      "provenance": {
+        "document_id": "460945ERT_iom.pdf",
+        "content_sha256": "4dd39c9d78e4aa7c8f6bd78b3f42828fd6c0a3e2810540f703f712404018b60d",
+        "verified_pages": [15],
+        "verification_method": "human_read_eligible_chunk_text"
+      }
+    },
+    {
+      "id": "H04",
+      "category": "supported_informational",
+      "split": "retrieval_positive",
+      "difficulty": "natural_paraphrase",
+      "question": "Where should a technician look first for on-board fault messages on the unit controller?",
+      "expected_behavior": "answer_from_evidence",
+      "expected_pages": [33],
+      "expected_section_headings": ["Microprocessor Controller"],
+      "expected_chunk_ids": ["460945ERT_iom.pdf:p33:c1:4dd39c9d78e4:53d1071c4b95"],
+      "reference_facts_paraphrased": [
+        "Check the microprocessor screen in the main control center; alarm conditions show a message and the alarm button blinks red."
+      ],
+      "forbidden_claims": [],
+      "insufficiency_kind": null,
+      "rationale": "Paraphrase of microprocessor alarm indication on page 33.",
+      "provenance": {
+        "document_id": "460945ERT_iom.pdf",
+        "content_sha256": "4dd39c9d78e4aa7c8f6bd78b3f42828fd6c0a3e2810540f703f712404018b60d",
+        "verified_pages": [33],
+        "verification_method": "human_read_eligible_chunk_text"
+      }
+    }
+  ]
+}
