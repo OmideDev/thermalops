@@ -17,6 +17,11 @@ from pathlib import Path
 from typing import Any, Sequence, TypedDict
 
 from app.rag.llm import LLMBackend
+from app.rag.safety import (
+    OPERATIONAL_SAFETY_ABSTAIN_ANSWER,
+    contains_unverified_operational_instruction,
+    requests_unverified_operational_instruction,
+)
 from app.rag.search import EmbeddingBackend, InMemorySemanticIndex, search_index
 
 INSUFFICIENT_EVIDENCE_ANSWER = (
@@ -57,6 +62,11 @@ class AskResponse(TypedDict):
 
 def _abstain() -> AskResponse:
     return {"answer": INSUFFICIENT_EVIDENCE_ANSWER, "sources": []}
+
+
+def _operational_abstain() -> AskResponse:
+    """Fail closed for scoped unverified operational instructions."""
+    return {"answer": OPERATIONAL_SAFETY_ABSTAIN_ANSWER, "sources": []}
 
 
 def _document_title(
@@ -235,6 +245,11 @@ def ask_with_evidence(
     the model output is malformed. Oversized questions raise ValueError.
     Oversized LLM responses fail closed (abstain). LLM transport/runtime
     errors propagate.
+
+    Additionally applies a scoped operational-safety policy: questions that
+    request unverified repair/reset/replacement instructions abstain before
+    generation, and model answers that issue such instructions abstain after
+    generation. This is not comprehensive injection protection.
     """
     if not isinstance(question, str) or not question.strip():
         raise ValueError("question must be a non-empty string")
@@ -245,6 +260,10 @@ def ask_with_evidence(
         )
     if top_k < 1:
         raise ValueError("top_k must be >= 1")
+
+    # Pre-generation operational safety gate (scoped heuristic).
+    if requests_unverified_operational_instruction(stripped):
+        return _operational_abstain()
 
     retrieved = search_index(index, stripped, embedder, top_k=top_k)
     if not retrieved:
@@ -298,4 +317,9 @@ def ask_with_evidence(
     if not sources:
         return _abstain()
 
-    return {"answer": answer.strip(), "sources": sources}
+    cleaned = answer.strip()
+    # Post-generation operational safety gate (scoped heuristic).
+    if contains_unverified_operational_instruction(cleaned):
+        return _operational_abstain()
+
+    return {"answer": cleaned, "sources": sources}
