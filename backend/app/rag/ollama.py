@@ -71,7 +71,7 @@ class OllamaChatBackend:
         base_url: str = DEFAULT_OLLAMA_BASE_URL,
         model: str = DEFAULT_OLLAMA_MODEL,
         connect_timeout: float = 5.0,
-        read_timeout: float = 120.0,
+        read_timeout: float = 180.0,
         temperature: float = 0.0,
         num_ctx: int = 2048,
         num_predict: int = 192,

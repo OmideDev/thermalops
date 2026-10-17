@@ -22,7 +22,14 @@ ASSISTANT_MANUAL_PATH=data/manuals/460945ERT_iom.pdf
 ASSISTANT_ALLOWED_PAGES=15,29,33
 ASSISTANT_OLLAMA_MODEL=qwen3:4b-instruct
 ASSISTANT_OLLAMA_BASE_URL=http://127.0.0.1:11434
+# Optional: CPU answers can exceed 90s (default 180s)
+# ASSISTANT_OLLAMA_READ_TIMEOUT=180
 ```
+
+The Vite frontend proxies `/api` to `127.0.0.1:8000` with a 300s proxy timeout.
+CORS allows `http://localhost:5173` and `http://127.0.0.1:5173`. Browser cancel
+aborts the HTTP wait only — it does **not** stop an in-flight Ollama generation.
+
 
 5. Start the API from `backend/` on **loopback only** (this app currently has **no authentication**):
 

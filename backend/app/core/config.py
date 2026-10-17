@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     assistant_ollama_base_url: str = "http://127.0.0.1:11434"
     assistant_ollama_model: str = "qwen3:4b-instruct"
     assistant_ollama_connect_timeout: float = 5.0
-    assistant_ollama_read_timeout: float = 120.0
+    # Local CPU generation can exceed 90s; keep frontend cancel separate.
+    assistant_ollama_read_timeout: float = 180.0
     assistant_top_k: int = 3
 
 

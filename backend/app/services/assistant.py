@@ -133,7 +133,7 @@ class AssistantService:
         ollama_base_url: str = DEFAULT_OLLAMA_BASE_URL,
         ollama_model: str = DEFAULT_OLLAMA_MODEL,
         connect_timeout: float = 5.0,
-        read_timeout: float = 120.0,
+        read_timeout: float = 180.0,
         top_k: int = 3,
         llm: LLMBackend | None = None,
         embedder: EmbeddingBackend | None = None,
@@ -273,7 +273,7 @@ def try_create_assistant_from_settings(settings: Any) -> AssistantService | None
                 getattr(settings, "assistant_ollama_connect_timeout", 5.0)
             ),
             read_timeout=float(
-                getattr(settings, "assistant_ollama_read_timeout", 120.0)
+                getattr(settings, "assistant_ollama_read_timeout", 180.0)
             ),
             top_k=int(getattr(settings, "assistant_top_k", 3)),
         )
