@@ -17,6 +17,13 @@ def pytest_configure(config: pytest.Config) -> None:
         "assistant_e2e: requires RUN_ASSISTANT_E2E=1, local PDF, FastEmbed, Ollama",
     )
 
+    # Isolate the default offline suite from developer .env / shell assistant
+    # flags. Environment variables override pydantic-settings env_file values,
+    # so forcing these before test modules import ``main`` prevents accidental
+    # PDF/Ollama init via TestClient(app) lifespan. Live E2E tests enable the
+    # assistant explicitly on a Settings instance / app.state override.
+    os.environ["ASSISTANT_ENABLED"] = "false"
+
 
 def pytest_collection_modifyitems(
     config: pytest.Config, items: list[pytest.Item]

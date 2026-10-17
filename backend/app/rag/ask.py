@@ -13,6 +13,7 @@ and still does not claim perfect hallucination prevention.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Any, Sequence, TypedDict
 
@@ -23,6 +24,7 @@ from app.rag.safety import (
     requests_unverified_operational_instruction,
 )
 from app.rag.search import EmbeddingBackend, InMemorySemanticIndex, search_index
+from app.rag.timing import AssistantRequestMetrics
 
 INSUFFICIENT_EVIDENCE_ANSWER = (
     "Insufficient evidence in the indexed manuals to answer this question."
@@ -233,6 +235,7 @@ def ask_with_evidence(
     *,
     top_k: int = _DEFAULT_TOP_K,
     document_titles: dict[str, str] | None = None,
+    metrics: AssistantRequestMetrics | None = None,
 ) -> AskResponse:
     """
     Retrieve eligible evidence and ask an LLM for a grounded answer.
@@ -263,46 +266,83 @@ def ask_with_evidence(
 
     # Pre-generation operational safety gate (scoped heuristic).
     if requests_unverified_operational_instruction(stripped):
+        if metrics is not None:
+            metrics.outcome = "abstain_operational"
         return _operational_abstain()
 
+    t_retrieval = time.perf_counter()
     retrieved = search_index(index, stripped, embedder, top_k=top_k)
+    if metrics is not None:
+        metrics.retrieval_ms = (time.perf_counter() - t_retrieval) * 1000.0
+
     if not retrieved:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     evidence = _assign_evidence(retrieved)
     if not evidence:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     evidence_by_id = {item["evidence_id"]: item for item in evidence}
     system = _SYSTEM_PROMPT
     user = _build_user_prompt(stripped, evidence)
 
-    raw = llm.complete(system=system, user=user)
+    t_llm = time.perf_counter()
+    try:
+        raw = llm.complete(system=system, user=user)
+    except Exception:
+        if metrics is not None:
+            metrics.llm_wall_ms = (time.perf_counter() - t_llm) * 1000.0
+            # Do not copy last_timing on failure — may be stale or cleared.
+        raise
+    if metrics is not None:
+        metrics.llm_wall_ms = (time.perf_counter() - t_llm) * 1000.0
+        ollama_timing = getattr(llm, "last_timing", None)
+        if ollama_timing is not None:
+            metrics.ollama = ollama_timing
+
     if not isinstance(raw, str):
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
     if len(raw) > MAX_LLM_RESPONSE_CHARS:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     try:
         payload = _extract_json_object(raw)
         parsed = _parse_structured_llm_payload(payload)
     except ValueError:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     if parsed["insufficient_evidence"]:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     answer = parsed["answer"]
     evidence_ids = parsed["evidence_ids"]
 
     if not answer.strip():
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
     if not evidence_ids:
         # Answer without citations is treated as unsupported.
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     # Reject LLM-supplied source metadata if present — only evidence_ids count.
     if "sources" in payload and payload["sources"]:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     try:
@@ -312,14 +352,22 @@ def ask_with_evidence(
             document_titles,
         )
     except ValueError:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     if not sources:
+        if metrics is not None:
+            metrics.outcome = "abstain_evidence"
         return _abstain()
 
     cleaned = answer.strip()
     # Post-generation operational safety gate (scoped heuristic).
     if contains_unverified_operational_instruction(cleaned):
+        if metrics is not None:
+            metrics.outcome = "abstain_operational"
         return _operational_abstain()
 
+    if metrics is not None:
+        metrics.outcome = "answer"
     return {"answer": cleaned, "sources": sources}

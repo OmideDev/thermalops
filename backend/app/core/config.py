@@ -3,6 +3,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """
+    Application settings.
+
+    Production loads optional ``.env`` plus process environment. Tests that
+    must ignore developer ``.env`` should construct
+    ``Settings(_env_file=None, ...)`` or rely on pytest forcing
+    ``ASSISTANT_ENABLED=false`` (env wins over env_file).
+    """
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

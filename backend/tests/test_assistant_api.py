@@ -358,14 +358,25 @@ def test_equipment_still_works_when_assistant_unavailable(client_no_assistant):
     assert ask.status_code == 503
 
 
-def test_default_app_assistant_disabled_without_override():
-    """Lifespan with assistant_enabled=false leaves assistant unavailable."""
+def test_default_app_assistant_disabled_without_override(monkeypatch):
+    """
+    Lifespan with assistant disabled leaves the route unavailable.
+
+    Uses an isolated Settings object (no .env) so a developer machine with
+    ASSISTANT_ENABLED=true in an ignored .env cannot flip this offline test.
+    """
+    from app.core.config import Settings
+
+    isolated = Settings(_env_file=None, assistant_enabled=False)
+    monkeypatch.setattr("main.settings", isolated)
+
     with TestClient(app) as client:
         response = client.post(
             "/api/v1/assistant/ask",
             json={"question": "What does the dirty filter sensor monitor?"},
         )
     assert response.status_code == 503
+    assert response.json()["detail"] == "Assistant is unavailable"
 
 
 def test_service_busy_error_helper():

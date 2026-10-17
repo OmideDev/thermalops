@@ -11,6 +11,7 @@ from __future__ import annotations
 import importlib.util
 import logging
 import threading
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -29,6 +30,10 @@ from app.rag.search import (
     InMemorySemanticIndex,
     build_index,
     collect_eligible_chunks_from_pages,
+)
+from app.rag.timing import (
+    AssistantRequestMetrics,
+    log_assistant_request_metrics,
 )
 
 logger = logging.getLogger(__name__)
@@ -55,6 +60,7 @@ class AssistantAskFn(Protocol):
         *,
         top_k: int = 3,
         document_titles: dict[str, str] | None = None,
+        metrics: AssistantRequestMetrics | None = None,
     ) -> AskResponse: ...
 
 
@@ -199,21 +205,38 @@ class AssistantService:
 
         Raises AssistantBusyError if another request holds the lock.
         Propagates TimeoutError / ConnectionError from the LLM backend.
+
+        Timing metrics are request-local (constructed here under the lock) so
+        concurrent processes cannot mix fields. Public AskResponse is unchanged.
         """
         acquired = self._lock.acquire(blocking=False)
         if not acquired:
             raise AssistantBusyError(
                 "assistant is busy; only one generation is allowed per process"
             )
+        metrics = AssistantRequestMetrics()
+        t_total = time.perf_counter()
         try:
-            return self.ask_fn(
+            t_prepare = time.perf_counter()
+            # Preparation is lock acquisition + metrics setup (intentionally small).
+            metrics.prepare_ms = (time.perf_counter() - t_prepare) * 1000.0
+            result = self.ask_fn(
                 question,
                 self.index,
                 self.embedder,
                 self.llm,
                 top_k=self.top_k,
                 document_titles=self.document_titles,
+                metrics=metrics,
             )
+            metrics.total_ms = (time.perf_counter() - t_total) * 1000.0
+            log_assistant_request_metrics(metrics)
+            return result
+        except Exception:
+            metrics.outcome = "error"
+            metrics.total_ms = (time.perf_counter() - t_total) * 1000.0
+            log_assistant_request_metrics(metrics)
+            raise
         finally:
             self._lock.release()
 

@@ -17,6 +17,8 @@ from urllib.parse import urlparse
 
 import httpx
 
+from app.rag.timing import OllamaTiming, extract_ollama_timing
+
 # Exact Phase 4A structured-output schema (object form for Ollama `format`).
 PHASE_4A_RESPONSE_JSON_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -97,6 +99,7 @@ class OllamaChatBackend:
         self._owns_client = http_client is None
         self.last_request: dict[str, Any] | None = None
         self.last_raw_response: dict[str, Any] | None = None
+        self.last_timing: OllamaTiming | None = None
 
     def close(self) -> None:
         if self._owns_client and self._client is not None:
@@ -119,6 +122,12 @@ class OllamaChatBackend:
         """Return assistant message content only (JSON string expected)."""
         if not isinstance(system, str) or not isinstance(user, str):
             raise TypeError("system and user must be strings")
+
+        # Drop prior request artifacts so a failed generation cannot leak
+        # timing into the next request's metrics snapshot.
+        self.last_request = None
+        self.last_raw_response = None
+        self.last_timing = None
 
         payload: dict[str, Any] = {
             "model": self.model,
@@ -162,6 +171,7 @@ class OllamaChatBackend:
         if not isinstance(data, dict):
             raise OllamaProtocolError("Ollama response is not a JSON object")
         self.last_raw_response = data
+        self.last_timing = extract_ollama_timing(data)
 
         message = data.get("message")
         if not isinstance(message, dict):
