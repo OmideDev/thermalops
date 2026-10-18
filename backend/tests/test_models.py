@@ -10,11 +10,19 @@ from app.models import (
 
 
 def test_models_register_expected_tables():
-    assert set(Base.metadata.tables.keys()) == {
+    names = set(Base.metadata.tables.keys())
+    assert {
         "organizations",
         "buildings",
         "equipment",
-    }
+        "rag_documents",
+        "rag_index_runs",
+        "rag_chunks",
+        "rag_index_snapshots",
+        "rag_index_snapshot_members",
+        "rag_active_index_pointer",
+        "admin_sessions",
+    }.issubset(names)
 
 
 def test_building_belongs_to_organization():

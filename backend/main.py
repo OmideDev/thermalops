@@ -4,6 +4,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1.admin_auth import router as admin_auth_router
 from app.api.v1.assistant import router as assistant_router
 from app.api.v1.buildings import router as buildings_router
 from app.api.v1.equipment import router as equipment_router
@@ -57,3 +58,4 @@ app.include_router(health_router)
 app.include_router(buildings_router)
 app.include_router(equipment_router)
 app.include_router(assistant_router)
+app.include_router(admin_auth_router)

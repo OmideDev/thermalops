@@ -40,5 +40,38 @@ class Settings(BaseSettings):
     assistant_ollama_read_timeout: float = 180.0
     assistant_top_k: int = 3
 
+    # Phase 6B.1 admin auth — never expose these via Vite env.
+    # Fail closed when username/hash missing (admin routes unavailable).
+    admin_username: str | None = Field(default=None, repr=False)
+    admin_password_hash: str | None = Field(
+        default=None,
+        repr=False,
+        description="Argon2id encoded hash (argon2.PasswordHasher().hash(...))",
+    )
+    admin_session_ttl_seconds: int = 60 * 60 * 8
+    admin_cookie_name: str = "thermalops_admin_session"
+    admin_cookie_secure: bool = False  # True for HTTPS staging/production
+    admin_cookie_samesite: str = "lax"
+    admin_csrf_header_name: str = "X-CSRF-Token"
+    # Comma-separated Origins allowed for cookie-authenticated admin mutations.
+    # Must stay aligned with CORS allow_origins for the Vite app.
+    admin_allowed_origins: str = (
+        "http://localhost:5173,http://127.0.0.1:5173"
+    )
+    admin_login_max_failures: int = 5
+    admin_login_window_seconds: int = 300
+
+    # RAG document management feature flag (persistence only in 6B.1).
+    rag_documents_enabled: bool = False
+    rag_storage_root: str = "data/rag_private"
+
 
 settings = Settings()
+
+
+def admin_auth_configured(cfg: Settings | None = None) -> bool:
+    """Return True when admin username and Argon2id hash are both set."""
+    current = cfg if cfg is not None else settings
+    username = (current.admin_username or "").strip()
+    password_hash = (current.admin_password_hash or "").strip()
+    return bool(username and password_hash)

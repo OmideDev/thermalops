@@ -16,6 +16,10 @@ def pytest_configure(config: pytest.Config) -> None:
         "markers",
         "assistant_e2e: requires RUN_ASSISTANT_E2E=1, local PDF, FastEmbed, Ollama",
     )
+    config.addinivalue_line(
+        "markers",
+        "alembic_pg: requires RUN_ALEMBIC_PG_TEST=1 and disposable Postgres",
+    )
 
     # Isolate the default offline suite from developer .env / shell assistant
     # flags. Environment variables override pydantic-settings env_file values,

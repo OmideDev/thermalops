@@ -141,3 +141,7 @@ class Equipment(Base):
     building: Mapped[Building] = relationship(
         back_populates="equipment",
     )
+
+
+# Register RAG / admin-session tables on the same declarative Base metadata.
+from app import models_rag as _models_rag  # noqa: E402,F401
