@@ -436,3 +436,30 @@ def test_source_metadata_mapping_and_duplicate_citations():
         top_k=1,
     )
     assert result2["sources"][0]["title"] == "460945ERT_iom"
+
+
+def test_system_prompt_encourages_concise_faithful_answers():
+    """Phase 5C: prompt steers against unsupported elaboration (not a semantic verifier)."""
+    from app.rag.ask import _SYSTEM_PROMPT
+
+    lowered = _SYSTEM_PROMPT.lower()
+    assert "concisely" in lowered or "concise" in lowered
+    assert "mechanisms" in lowered or "operating details" in lowered
+    assert "do not invent" in lowered
+    assert "evidence_ids" in lowered
+
+
+def test_user_prompt_asks_for_concise_question_scoped_answer():
+    index, embedder = _index_for([_eligible()])
+    llm = FakeLLMBackend(
+        responses=[
+            _ok_llm_payload(
+                answer="Dirty filter sensors monitor pressure drop.",
+                evidence_ids=["E1"],
+            )
+        ]
+    )
+    ask_with_evidence("What does the dirty filter sensor monitor?", index, embedder, llm)
+    assert llm.last_user is not None
+    assert "concise" in llm.last_user.lower()
+    assert "QUESTION" in llm.last_user

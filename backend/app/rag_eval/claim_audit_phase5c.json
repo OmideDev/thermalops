@@ -1,0 +1,113 @@
+{
+  "audit_id": "phase5c_claim_audit_v1",
+  "parent_dataset_id": "greenheck_erv_eval_v1",
+  "parent_version": "1.0.1",
+  "baseline_commit": "35fb2a90faac5dc489cbb7647e0118beba70e3e6",
+  "method": "Human comparison of baseline Qwen answers against eligible retrieved chunk text. Qwen output is not ground truth. Labels are claim-level vs cited/retrieved evidence.",
+  "scenarios": [
+    {
+      "scenario_id": "S01",
+      "question": "What does the dirty filter sensor monitor?",
+      "cited_evidence_mapping_note": "Baseline cited E1 = retrieved gold Dirty Filter Sensor chunk.",
+      "claims": [
+        {
+          "claim": "Dirty filter sensor monitors pressure drop across outdoor air filters, exhaust air filters, or both.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p15:c7:4dd39c9d78e4:3310b10a0f6a"
+          ],
+          "notes": "Near-verbatim from Dirty Filter Sensor section."
+        }
+      ],
+      "overall": "faithful_and_concise"
+    },
+    {
+      "scenario_id": "S05",
+      "question": "What frost control options are available?",
+      "cited_evidence_mapping_note": "Baseline cited E1,E2,E3 mapped to retrieved order c1, c0, c2 (all Frost Control page 15).",
+      "claims": [
+        {
+          "claim": "Three options: timed exhaust, electric preheat, modulating wheel frost control.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p15:c0:4dd39c9d78e4:8e55f9687bd5",
+            "460945ERT_iom.pdf:p15:c1:4dd39c9d78e4:a714ab15c597"
+          ],
+          "notes": "Direct answer to the question; gold reference fact."
+        },
+        {
+          "claim": "Timed exhaust uses a timer to shut down the supply blower for a default 5 minutes when frost is detected.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p15:c1:4dd39c9d78e4:a714ab15c597"
+          ],
+          "notes": "Present in retrieved/cited frost narrative. Incomplete vs source: omits 'every 30 minutes' cadence. Omission is not contradiction."
+        },
+        {
+          "claim": "Electric preheat activates an electric heater at the outdoor air intake to warm entering air.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p15:c2:4dd39c9d78e4:2394172dcd80"
+          ],
+          "notes": "Supported by retrieved neighbor E3/c2, not required by the options-list question."
+        },
+        {
+          "claim": "Modulating wheel frost control uses a VFD to reduce wheel speed/effectiveness and prevent frost.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p15:c2:4dd39c9d78e4:2394172dcd80"
+          ],
+          "notes": "VFD wording is in retrieved c2. Not unsupported relative to cited evidence; still over-elaboration relative to an options-only question."
+        }
+      ],
+      "grounding_weakness": "Model answered beyond the asked options list. Elaborations happened to be supported by neighbors; that pattern is risky when neighbors are topical but not asked-for."
+    },
+    {
+      "scenario_id": "S13",
+      "question": "What does the manual say about internal filter maintenance?",
+      "cited_evidence_mapping_note": "Baseline cited E1 = gold Internal Filter chunk.",
+      "claims": [
+        {
+          "claim": "Typically 2-inch thick pleated paper filters; check on routine schedule; replace as necessary for proper airflow.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p29:c3:4dd39c9d78e4:7674c158ad11"
+          ],
+          "notes": "Matches gold reference fact."
+        },
+        {
+          "claim": "Replacement filters shall be of same performance and quality as factory-installed filters.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p29:c3:4dd39c9d78e4:7674c158ad11"
+          ],
+          "notes": "Explicit in gold Internal Filter chunk."
+        },
+        {
+          "claim": "Filters upstream of the coil should be checked regularly.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p29:c3:4dd39c9d78e4:7674c158ad11"
+          ],
+          "notes": "Previously marked unverifiable in 5B.2B prep; resolved Supported after reading gold chunk text."
+        },
+        {
+          "claim": "If filters are dirty they should be cleaned or replaced; keep filters clean for desired airflow.",
+          "judgment": "supported",
+          "evidence_chunk_ids": [
+            "460945ERT_iom.pdf:p29:c3:4dd39c9d78e4:7674c158ad11"
+          ],
+          "notes": "Explicit in same gold chunk."
+        }
+      ],
+      "overall": "supported_but_verbose_relative_to_question",
+      "phase5c_revised_answer_note": "Revised Qwen answer omitted '2-inch thick pleated paper' while retaining supported maintenance actions. Completeness class B (helpful but optional): question asks about maintenance, not filter identity. Not treated as a necessary regression; no second prompt retune.",
+      "omitted_filter_type_completeness": "optional"
+    }
+  ],
+  "phase5c_conclusion": {
+    "prompt_retuned_again_for_s13": false,
+    "s13_omission_class": "B_helpful_but_optional",
+    "shorter_not_automatically_better": true
+  }
+}

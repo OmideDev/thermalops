@@ -119,14 +119,14 @@ human confirmation. Short paraphrased evidence only (no long manual excerpts).
 - **Sources returned:** page 29.
 - **Gold reference (paraphrased):** typically 2-inch pleated paper filters;
   check routinely; replace as necessary for proper airflow.
-- **Atomic claims (provisional):**
+- **Atomic claims (resolved in Phase 5C claim audit):**
   1. 2-inch pleated paper filters + routine check/replace for airflow →
-     **Supported** (confirm).
+     **Supported** (gold Internal Filter chunk).
   2. Replacement filters same performance/quality as factory → **Supported**
-     if present in retrieved Internal Filter text (confirm).
-  3. “Filters upstream of the coil should be checked regularly” → treat as
-     **Unverifiable** until a human confirms that clause is in the cited
-     retrieved chunk (neighbor bleed risk).
+     (same gold chunk).
+  3. “Filters upstream of the coil should be checked regularly” → **Supported**
+     (explicit in gold Internal Filter chunk; earlier “unverifiable” label
+     withdrawn after source read). See `claim_audit_phase5c.json`.
 
 ## 3. Abstention mechanisms (U02 / U08 / E02)
 
